@@ -1,0 +1,12 @@
+<view class="page">
+  <text class="eyebrow">作品库</text>
+  <view class="page-title">我的作品</view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <view wx:if="{{decks.length}}">
+    <view class="section work" wx:for="{{decks}}" wx:key="id">
+      <view class="work-main" bindtap="open" data-id="{{item.id}}"><text class="work-title">{{item.title}}</text><text class="work-meta">{{item.actualPages || item.pageCount}}页 · {{item.stage}}</text></view>
+      <button class="secondary" data-id="{{item.id}}" bindtap="remove">删除</button>
+    </view>
+  </view>
+  <view wx:else class="empty">还没有作品</view>
+</view>

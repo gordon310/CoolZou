@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#26735B">
+  <title>KIDSPPT · 家长活动PPT</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="主导航">
+      <div class="brand"><img src="/assets/logo.png" alt="KIDSPPT"><div><strong>KIDSPPT</strong><span>孩子的活动记录</span></div></div>
+      <nav class="side-nav">
+        <button class="nav-item active" data-view="create"><span class="icon">＋</span>制作 PPT</button>
+        <button class="nav-item" data-view="works"><span class="icon">▣</span>我的作品</button>
+        <button class="nav-item" data-view="orders"><span class="icon">◇</span>订单记录</button>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot"></span><span id="modeLabel">本地演示模式</span></div>
+    </aside>
+    <main class="main">
+      <header class="topbar"><div><p class="eyebrow">给家长的创作工具</p><h1 id="pageTitle">制作一份孩子的活动 PPT</h1></div><div class="top-actions"><button class="avatar" id="accountButton" title="查看当前账号" aria-label="查看当前账号">家</button></div></header>
+      <div id="notice" class="notice" role="status" hidden></div>
+      <section class="view active" id="view-create">
+        <div class="intro-row"><div><h2>把活动照片，变成孩子能讲的故事</h2><p id="generationMode"></p><p id="trialLimits"></p></div></div>
+        <form id="createForm" novalidate>
+          <div class="form-grid">
+            <section class="form-section span-2">
+              <div class="section-heading"><span class="section-number">01</span><div><h3>活动资料</h3><p>照片顺序会用于 PPT 排版</p></div></div>
+              <label class="upload-zone" for="photoInput"><input id="photoInput" type="file" accept="image/jpeg,image/png,image/webp" multiple><span class="upload-mark">＋</span><span><strong>添加活动照片</strong><small>支持 JPG、PNG、WEBP，系统自动压缩后上传<br>最多 20 张，单张不超过 1MB，总上传不超过 20MB</small></span></label>
+              <div id="photoList" class="photo-list" aria-live="polite"></div>
+              <div class="two-fields"><label>作品标题<input id="title" name="title" maxlength="40" placeholder="例如：春天里的植物观察"></label><label>孩子称呼（可选）<input id="nickname" name="nickname" maxlength="20" placeholder="例如：小宇"></label></div>
+            </section>
+            <section class="form-section">
+              <div class="section-heading"><span class="section-number">02</span><div><h3>演示内容</h3></div></div>
+              <div class="two-fields child-fields"><label>年级<select id="grade" name="grade"><option value="">选择</option><option value="1">一年级</option><option value="2">二年级</option><option value="3">三年级</option><option value="4">四年级</option><option value="5">五年级</option><option value="6">六年级</option></select></label><label>性别<select id="gender" name="gender"><option value="">选择</option><option value="boy">男孩</option><option value="girl">女孩</option></select></label></div>
+              <label class="description-field">演示稿描述<textarea id="content" name="content" maxlength="8000" rows="9" placeholder="例如：校园卫生广播。依次介绍膳食宝塔、阅读区和快检实验，安排两位同学分享，最后总结收获。语言自然，重点清楚。&#10;也可填写完整讲稿。"></textarea></label>
+            </section>
+            <section class="form-section">
+              <div class="section-heading"><span class="section-number">03</span><div><h3>PPT 风格模板</h3><p>生成前选择版式，后续会应用到整份 PPT</p></div></div>
+              <fieldset class="template-picker"><legend>选择模板</legend><label class="template-option"><input type="radio" name="template" value="fresh" checked><span class="template-sample fresh"><b>清新自然</b><small>留白充足，适合活动记录</small></span></label><label class="template-option"><input type="radio" name="template" value="playful"><span class="template-sample playful"><b>活力童趣</b><small>色彩明快，适合孩子分享</small></span></label><label class="template-option"><input type="radio" name="template" value="report"><span class="template-sample report"><b>简洁汇报</b><small>结构清楚，适合课堂展示</small></span></label></fieldset>
+              <div class="privacy-check"><label><input type="checkbox" id="consent"> <span>我确认上传的照片和文字仅用于本次 PPT 生成，并已获得必要的使用授权。</span></label></div>
+              <label class="outline-option"><input type="checkbox" id="reviewOutline"><span>逐页编辑大纲</span></label>
+              <div class="form-actions"><button class="button primary" type="submit" id="submitDeck"><span>生成 PPT</span><span class="arrow">→</span></button></div>
+            </section>
+          </div>
+        </form>
+      </section>
+      <section class="view" id="view-outline"><div class="view-heading"><button class="text-button" id="backToCreate">← 返回修改</button><div><p class="eyebrow">内容确认</p><h2 id="outlineTitle">检查每一页</h2></div><span class="stage-badge" id="outlineStage"></span></div><div class="outline-layout"><div id="outlineEditor" class="outline-editor"></div><aside class="side-summary"><div class="summary-label">生成设置</div><dl id="outlineSummary"></dl><div class="grounding-note"><span class="note-mark">i</span><p>内容来自你填写的活动流程。请确认孩子的真实经历和感受。</p></div></aside></div><div class="sticky-actions"><button class="button secondary" id="saveOutline">保存修改</button><button class="button primary" id="generatePpt">确认并生成 PPT <span class="arrow">→</span></button></div></section>
+      <section class="view" id="view-progress"><div class="progress-wrap"><span class="loader"></span><p class="eyebrow">正在生成</p><h2 id="progressTitle">正在生成你的 PPT</h2><p id="progressMessage">请稍后，精彩马上呈现</p><div class="progress-info"><strong id="progressPercent">0%</strong><span id="progressStage">正在连接生成服务</span></div><div class="progress-track" id="generationProgress" role="progressbar" aria-labelledby="progressTitle" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="progressValue"></span></div><div class="progress-steps"><span class="done">内容整理</span><span>排版导出</span><span>可以下载</span></div><button id="retryGeneration" class="button secondary" hidden>重试生成</button></div></section>
+      <section class="view" id="view-preview"><div class="view-heading"><div><p class="eyebrow">作品预览</p><h2 id="previewTitle">你的 PPT 已准备好</h2></div></div><div id="slidePreview" class="slide-preview"></div><div class="preview-actions preview-downloads"><button class="button secondary" id="downloadFree" style="width:200px">免费下载</button><button class="button primary" id="downloadFull" style="width:200px">下载完整版</button></div></section>
+      <section class="view" id="view-works"><div class="view-heading"><div><p class="eyebrow">作品库</p><h2>我的作品</h2></div><button class="button primary" id="newWork">＋ 新建作品</button></div><div id="worksList" class="works-list"></div></section>
+      <section class="view" id="view-orders"><div class="view-heading"><div><p class="eyebrow">交易记录</p><h2>订单记录</h2></div></div><div id="ordersList" class="orders-list"></div></section>
+    </main>
+  </div>
+  <dialog id="paymentDialog" aria-labelledby="downloadDialogTitle"><div class="dialog-content"><button class="dialog-close" id="closeDialog" aria-label="关闭">×</button><p class="eyebrow">确认下载</p><h2 id="downloadDialogTitle">完整 PPT</h2><p class="dialog-price">¥50<span>每份</span></p><fieldset class="pay-channel"><legend>付款方式</legend><label><input type="radio" name="payChannel" value="wechat" checked><span>微信支付</span></label><label><input type="radio" name="payChannel" value="alipay"><span>支付宝</span></label></fieldset><p class="dialog-copy">完整文件50元，确认后补全其余页面。本地演示不会实际扣款。</p><div class="dialog-actions"><button class="button secondary" id="cancelPayment">取消</button><button class="button primary" id="confirmPayment">确认模拟支付</button></div></div></dialog>
+  <script src="/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,9 @@
+<view class="page">
+  <text class="eyebrow">交易记录</text>
+  <view class="page-title">订单记录</view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <view wx:if="{{orders.length}}">
+    <view class="section order" wx:for="{{orders}}" wx:key="id"><view class="order-main"><text class="order-title">{{item.title}}</text><text class="order-meta">{{item.channel === 'wechat' ? '微信支付' : '支付宝'}} · {{item.status === 'paid' ? '已支付' : '待支付'}}</text><text class="order-meta">订单号：{{item.id}}</text><text class="order-meta">{{item.delivery}}</text></view><text class="price">¥{{item.amountFen / 100}}</text></view>
+  </view>
+  <view wx:else class="empty">暂无订单</view>
+</view>

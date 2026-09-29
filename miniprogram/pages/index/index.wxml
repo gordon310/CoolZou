@@ -1,0 +1,38 @@
+<view class="page">
+  <text class="eyebrow">给家长的创作工具</text>
+  <view class="page-title">把活动照片，变成孩子能讲的故事</view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <view wx:if="{{config.aiMode === 'demo'}}" class="notice">本地文字整理模式 · AI 润色尚未接通</view>
+  <view wx:if="{{config.mode === 'demo' && config.aiMode === 'demo'}}" class="notice">本地演示模式：可连续测试生成流程。</view>
+  <view wx:else class="notice">试运营：每个账号每天可新建{{config.dailyFreeTasks || 1}}份作品。</view>
+  <view class="section">
+    <text class="section-title">活动资料</text>
+    <text class="hint">照片顺序会用于 PPT 排版</text>
+    <view id="required-photos" class="upload" bindtap="chooseImages">＋ 添加活动照片<view class="hint">支持 JPG、PNG、WEBP，系统自动压缩后上传</view><view class="hint">最多 {{config.maxPhotos}} 张，单张不超过 1MB，总上传不超过 20MB</view></view>
+    <view class="photo-grid">
+      <view class="photo" wx:for="{{photos}}" wx:key="id">
+        <image src="{{item.url}}" mode="aspectFill"></image>
+        <button class="remove" data-index="{{index}}" bindtap="removeImage">×</button>
+        <view class="photo-order"><button data-index="{{index}}" data-direction="-1" bindtap="moveImage">←</button><button data-index="{{index}}" data-direction="1" bindtap="moveImage">→</button></view>
+      </view>
+    </view>
+    <label id="required-title" class="field">作品标题<input class="input" data-field="title" value="{{form.title}}" maxlength="40" bindinput="setField" placeholder="例如：春天里的植物观察" placeholder-class="control-placeholder" /></label>
+    <label class="field">孩子称呼（可选）<input class="input" data-field="nickname" value="{{form.nickname}}" maxlength="20" bindinput="setField" placeholder="例如：小宇" placeholder-class="control-placeholder" /></label>
+  </view>
+  <view class="section">
+    <text class="section-title">演示内容</text>
+    <view class="row">
+      <label id="required-age" class="field">年龄<picker class="picker" mode="selector" range="{{ages}}" bindchange="setField" data-field="age">{{form.age ? form.age + '岁' : '选择'}}</picker></label>
+      <label id="required-gender" class="field">性别<picker class="picker" mode="selector" range="{{genders}}" bindchange="setField" data-field="gender">{{form.gender === 'boy' ? '男孩' : form.gender === 'girl' ? '女孩' : '选择'}}</picker></label>
+    </view>
+    <label id="required-content" class="field">演示稿描述<textarea class="textarea" data-field="content" value="{{form.content}}" maxlength="8000" bindinput="setField" placeholder="例如：校园卫生广播。依次介绍膳食宝塔、阅读区和快检实验，安排两位同学分享，最后总结收获。语言自然，重点清楚。也可填写完整讲稿。" placeholder-class="control-placeholder" /></label>
+  </view>
+  <view class="section">
+    <text class="section-title">PPT 风格模板</text>
+    <text class="hint">生成前选择版式，后续会应用到整份 PPT</text>
+    <view id="required-template" class="template-list"><view wx:for="{{templates}}" wx:key="value" class="template-option {{form.template === item.value ? 'selected' : ''}}" data-template="{{item.value}}" bindtap="setTemplate"><text class="template-check">{{form.template === item.value ? '✓' : ''}}</text><text>{{item.label}}</text></view></view>
+    <checkbox-group id="required-consent" bindchange="setConsent"><label class="hint consent"><checkbox value="yes" checked="{{form.consent}}" />我确认已获得必要使用授权，并同意将上传的照片和填写的信息发送至通义千问（DashScope）AI 服务，仅用于本次 PPT 生成。</label></checkbox-group>
+    <checkbox-group bindchange="setReviewOutline"><label class="hint consent"><checkbox value="yes" checked="{{form.reviewOutline}}" />逐页编辑大纲</label></checkbox-group>
+    <button class="primary" loading="{{loading}}" disabled="{{loading}}" bindtap="submit">{{form.reviewOutline ? '生成内容大纲' : '生成 PPT'}}</button>
+  </view>
+</view>

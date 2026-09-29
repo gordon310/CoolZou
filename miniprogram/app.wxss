@@ -1,0 +1,53 @@
+page { background: #f5f7f5; color: #202523; font-family: -apple-system-font, "PingFang SC", "Microsoft YaHei", sans-serif; font-size: 28rpx; }
+button { border-radius: 8rpx; }
+.page { padding: 32rpx; }
+.eyebrow { color: #26735b; font-size: 21rpx; font-weight: 700; letter-spacing: 2rpx; }
+.page-title { font-size: 44rpx; line-height: 1.25; font-weight: 700; margin: 12rpx 0 28rpx; }
+.section { background: #ffffff; border: 1rpx solid #dbe6df; border-radius: 12rpx; padding: 28rpx; margin-bottom: 20rpx; }
+.section-title { display: block; font-size: 32rpx; font-weight: 700; margin-bottom: 10rpx; }
+.hint, .muted { color: #69736e; font-size: 24rpx; line-height: 1.6; }
+.field { display: block; color: #69736e; font-size: 24rpx; font-weight: 700; margin-top: 22rpx; }
+.input, .textarea, .picker { display: block; width: 100%; box-sizing: border-box; border: 1rpx solid #dbe6df; border-radius: 8rpx; background: #ffffff; margin-top: 10rpx; color: #202523; font-size: 28rpx; font-weight: 400; }
+.input { height: 88rpx; padding: 0 22rpx; line-height: 88rpx; }
+.picker { min-height: 88rpx; padding: 0 22rpx; line-height: 88rpx; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.textarea { height: 220rpx; min-height: 220rpx; padding: 18rpx 22rpx; line-height: 1.55; }
+.control-placeholder { color: #98a19d; font-weight: 400; }
+.row { display: flex; gap: 16rpx; }
+.row > .field { flex: 1; min-width: 0; }
+.choices { display: flex; flex-wrap: wrap; gap: 14rpx; margin-top: 12rpx; }
+.choice { border: 1rpx solid #dbe6df; color: #202523; padding: 16rpx 22rpx; border-radius: 8rpx; }
+.choice.selected { border-color: #26735b; color: #26735b; background: #f1f7f3; font-weight: 700; }
+.template-list { display: flex; gap: 12rpx; margin-top: 18rpx; }
+.template-option { flex: 1; height: 88rpx; min-width: 0; box-sizing: border-box; border: 1rpx solid #dbe6df; border-radius: 8rpx; display: flex; align-items: center; justify-content: center; color: #202523; background: #ffffff; font-size: 24rpx; }
+.template-option.selected { border-color: #26735b; background: #f1f7f3; color: #26735b; font-weight: 700; }
+.template-check { width: 26rpx; margin-right: 6rpx; color: #26735b; font-size: 26rpx; font-weight: 700; text-align: center; }
+.photo-grid { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 18rpx; }
+.photo { position: relative; width: 126rpx; height: 126rpx; }
+.photo image { width: 100%; height: 100%; border-radius: 8rpx; }
+.remove { position: absolute; right: -8rpx; top: -8rpx; width: 38rpx; height: 38rpx; padding: 0; line-height: 36rpx; background: #ffffff; color: #d96765; font-size: 26rpx; }
+.upload { border: 1rpx dashed #9bbcac; color: #26735b; background: #f1f7f3; padding: 28rpx; text-align: center; border-radius: 8rpx; margin-top: 18rpx; }
+.primary { background: #26735b; color: #ffffff; }
+.secondary { background: #ffffff; color: #202523; border: 1rpx solid #dbe6df; }
+.actions { display: flex; gap: 16rpx; margin-top: 24rpx; }
+.actions button { flex: 1; }
+.slide { background: #ffffff; border: 1rpx solid #dbe6df; border-radius: 10rpx; padding: 22rpx; margin-bottom: 16rpx; }
+.slide-number { color: #d96765; font-weight: 700; margin-bottom: 8rpx; }
+.notice { color: #76511b; background: #fff5e8; border-left: 6rpx solid #e5a34f; padding: 18rpx; margin-bottom: 20rpx; line-height: 1.5; word-break: break-word; }
+.preview-card { background: #ffffff; border: 1rpx solid #dbe6df; margin-bottom: 18rpx; display: flex; min-height: 210rpx; }
+.preview-copy { padding: 24rpx; flex: 1; }
+.preview-copy text { display: block; }
+.preview-title { font-size: 30rpx; font-weight: 700; margin-bottom: 12rpx; }
+.preview-body { font-size: 24rpx; color: #69736e; line-height: 1.6; }
+.preview-photo { width: 42%; object-fit: cover; }
+.locked { opacity: .58; }
+.work { display: flex; justify-content: space-between; gap: 20rpx; align-items: center; }
+.work-main { min-width: 0; flex: 1; }
+.work-title { display: block; font-weight: 700; margin-bottom: 8rpx; }
+.work-meta { color: #69736e; font-size: 22rpx; }
+.order { display: flex; justify-content: space-between; align-items: center; gap: 18rpx; }
+.order-main { min-width: 0; flex: 1; word-break: break-all; }
+.order-title { display: block; font-size: 26rpx; font-weight: 700; }
+.order-meta { display: block; color: #69736e; font-size: 22rpx; margin-top: 8rpx; }
+.order .price { flex-shrink: 0; }
+.price { color: #26735b; font-weight: 700; }
+.empty { padding: 80rpx 20rpx; text-align: center; color: #69736e; }

@@ -1,0 +1,15 @@
+[Unit]
+Description=CoolZou container health watchdog and crash recorder
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /opt/coolzou-watchdog/watchdog.py
+Restart=always
+RestartSec=5
+User=root
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

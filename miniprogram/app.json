@@ -1,0 +1,26 @@
+{
+  "pages": [
+    "pages/index/index",
+    "pages/outline/outline",
+    "pages/preview/preview",
+    "pages/works/works",
+    "pages/orders/orders"
+  ],
+  "window": {
+    "navigationBarTitleText": "KIDSPPT",
+    "navigationBarBackgroundColor": "#ffffff",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f5f7f5"
+  },
+  "tabBar": {
+    "color": "#69736e",
+    "selectedColor": "#26735b",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "white",
+    "list": [
+      { "pagePath": "pages/index/index", "text": "制作" },
+      { "pagePath": "pages/works/works", "text": "作品" },
+      { "pagePath": "pages/orders/orders", "text": "订单" }
+    ]
+  }
+}

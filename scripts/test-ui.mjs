@@ -1,0 +1,175 @@
+import assert from 'node:assert/strict';
+import { mkdir, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
+import sharp from 'sharp';
+import { chromium } from 'playwright';
+import { createApp } from '../server/app.mjs';
+import { makeDemoOutline } from '../server/outline.mjs';
+
+const dataDir = await mkdtemp(path.join(tmpdir(), 'kidsppt-ui-'));
+const artifactDir = path.resolve('artifacts');
+await mkdir(artifactDir, { recursive: true });
+const imagePath = path.join(dataDir, 'activity.png');
+await sharp({ create: { width: 640, height: 360, channels: 3, background: '#26735b' } }).png().toFile(imagePath);
+// Multiple creation paths share this synthetic account; quota boundaries have dedicated API tests.
+const app = await createApp({
+  dataDir,
+  mode: 'demo',
+  aiMode: 'demo',
+  costPolicy: { dailyFreeTasks: 3 },
+  phaseGenerator: async input => {
+    await new Promise(resolve => setTimeout(resolve, 650));
+    return makeDemoOutline(input);
+  }
+});
+await new Promise(resolve => app.server.listen(0, '127.0.0.1', resolve));
+const base = `http://127.0.0.1:${app.server.address().port}`;
+const workerTimer = setInterval(() => app.processNext().catch(() => {}), 100);
+const browser = await chromium.launch({ headless: true });
+
+try {
+  const context = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on('pageerror', error => pageErrors.push(error.message));
+  await page.goto(base, { waitUntil: 'networkidle' });
+  assert.doesNotMatch(await page.locator('body').innerText(), /免费|收费|支付|付款|¥/);
+  assert.equal(await page.locator('label[for="reviewOutline"], .outline-option').innerText(), '逐页编辑大纲');
+  const pickerTops = await page.locator('.child-fields > label').evaluateAll(labels => labels.map(label => Math.round(label.getBoundingClientRect().top)));
+  assert.equal(new Set(pickerTops).size, 1);
+  assert.equal(await page.locator('#age, input[name="type"]').count(), 0);
+  assert.equal(await page.locator('#reviewOutline').isChecked(), false);
+  assert.match(await page.locator('#submitDeck').innerText(), /生成 PPT/);
+  const checkboxWidth = await page.locator('.privacy-check input').evaluate(input => input.getBoundingClientRect().width);
+  assert.ok(checkboxWidth <= 20);
+  await page.screenshot({ path: path.join(artifactDir, 'ui-create-desktop.png'), fullPage: true });
+  await page.locator('#photoInput').setInputFiles(imagePath);
+  await page.locator('#title').fill('校园科学活动');
+  await page.locator('#nickname').fill('小同学');
+  await page.locator('#grade').selectOption('3');
+  await page.locator('#gender').selectOption('boy');
+  await page.locator('#content').fill('进入植物园\n观察叶片\n记录颜色\n比较形状\n整理观察记录\n交流发现\n请用三年级男孩口吻，句子短一些，扩写观察和收获。');
+  await page.locator('input[name="template"][value="playful"]').check();
+  await page.locator('#consent').check();
+  await page.locator('#reviewOutline').check();
+  assert.match(await page.locator('#submitDeck').innerText(), /生成内容大纲/);
+  await page.locator('#createForm button[type="submit"]').click();
+  await page.waitForSelector('#view-progress.active');
+  await page.waitForFunction(() => document.querySelector('#progressStage')?.textContent === '正在整理内容');
+  assert.equal(await page.locator('#progressTitle').innerText(), '正在生成你的 PPT');
+  assert.equal(await page.locator('#progressMessage').innerText(), '请稍后，精彩马上呈现');
+  assert.equal(await page.locator('#progressPercent').innerText(), '25%');
+  assert.equal(await page.locator('#generationProgress').getAttribute('aria-valuenow'), '25');
+  await page.waitForSelector('#view-outline.active', { timeout: 5000 });
+  const outlineBodies = await page.locator('[data-field="body"]').evaluateAll(elements => elements.map(element => element.value));
+  assert.ok(outlineBodies.some(body => body.includes('观察叶片')));
+  assert.match(await page.locator('#outlineSummary').innerText(), /活力童趣/);
+  await page.locator('[data-slide="0"][data-field="title"]').fill('我的校园科学活动');
+  await page.locator('#generatePpt').click();
+  await page.waitForSelector('#view-preview.active', { timeout: 15000 });
+  const slideCount = await page.locator('.slide-card').count();
+  assert.equal(await page.locator('.preview-actions button').count(), 2);
+  assert.equal(await page.locator('#downloadFull').innerText(), '下载完整版（共8页）');
+  assert.equal(await page.locator('#downloadFree').innerText(), '免费下载');
+  assert.equal(await page.locator('#downloadFree').evaluate(el => Math.round(el.getBoundingClientRect().width)), await page.locator('#downloadFull').evaluate(el => Math.round(el.getBoundingClientRect().width)));
+  assert.doesNotMatch(await page.locator('#view-preview').innerText(), /收费|支付|付款|¥/);
+  assert.equal(slideCount, 5);
+  assert.equal(await page.locator('.slide-card.template-playful').count(), slideCount);
+  await page.screenshot({ path: path.join(artifactDir, 'ui-desktop.png'), fullPage: true });
+  const freeDownload = page.waitForEvent('download');
+  await page.locator('#downloadFree').click();
+  await freeDownload;
+  await page.locator('#downloadFull').click();
+  assert.equal(await page.locator('#paymentDialog').evaluate(dialog => dialog.open), true);
+  assert.match(await page.locator('#paymentDialog').innerText(), /微信支付/);
+  assert.match(await page.locator('#paymentDialog').innerText(), /支付宝/);
+  assert.match(await page.locator('#paymentDialog').innerText(), /¥50/);
+  const paymentGeometry = await page.locator('.pay-channel label').evaluateAll(labels => labels.map(label => ({ top: label.getBoundingClientRect().top, height: label.getBoundingClientRect().height, border: getComputedStyle(label).borderWidth })));
+  assert.equal(paymentGeometry[0].top, paymentGeometry[1].top);
+  assert.ok(paymentGeometry.every(item => item.height >= 44 && item.border === '0px'));
+  await page.locator('input[name="payChannel"][value="alipay"]').focus();
+  await page.keyboard.press('Space');
+  assert.equal(await page.locator('input[name="payChannel"][value="alipay"]').isChecked(), true);
+  await page.screenshot({ path: path.join(artifactDir, 'ui-download-dialog-desktop.png') });
+  await page.locator('#cancelPayment').click();
+  await page.locator('#downloadFull').click();
+  const download = page.waitForEvent('download');
+  await page.locator('#confirmPayment').click();
+  await page.waitForSelector('#view-outline.active', { timeout: 5000 });
+  assert.equal(await page.locator('[data-slide="0"][data-field="title"]').getAttribute('readonly'), '');
+  await page.locator('#generatePpt').click();
+  await download;
+  await page.locator('.nav-item[data-view="orders"]').click();
+  await page.waitForSelector('.order-row');
+  assert.match(await page.locator('.order-main strong').innerText(), /^校园科学活动 · \d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/);
+  assert.match(await page.locator('.order-status').innerText(), /已支付/);
+  await page.screenshot({ path: path.join(artifactDir, 'ui-orders-desktop.png'), fullPage: true });
+
+  // A template-only change reuses the prepared copy and performs render-only work.
+  await page.locator('.nav-item[data-view="works"]').click();
+  await page.locator('#newWork').click();
+  await page.locator('#photoInput').setInputFiles(imagePath);
+  await page.locator('#title').fill('校园科学活动');
+  await page.locator('#nickname').fill('小同学');
+  await page.locator('#grade').selectOption('3');
+  await page.locator('#gender').selectOption('boy');
+  await page.locator('#content').fill('进入植物园\n观察叶片\n记录颜色\n比较形状\n整理观察记录\n交流发现\n请用三年级男孩口吻，句子短一些，扩写观察和收获。');
+  await page.locator('input[name="template"][value="report"]').check();
+  await page.locator('#consent').check();
+  await page.locator('#submitDeck').click();
+  await page.waitForSelector('#view-preview.active', { timeout: 5000 });
+  assert.equal(await page.locator('.slide-card.template-report').count(), 5);
+  assert.equal(await page.locator('#notice').isHidden(), true);
+
+  const mobile = await page.context().newPage();
+  mobile.on('pageerror', error => pageErrors.push(error.message));
+  await mobile.setViewportSize({ width: 390, height: 844 });
+  await mobile.goto(base, { waitUntil: 'networkidle' });
+  await mobile.screenshot({ path: path.join(artifactDir, 'ui-mobile.png'), fullPage: true });
+  assert.equal(await mobile.locator('#view-create.active').count(), 1);
+  assert.equal(await mobile.locator('.sidebar').evaluate(el => getComputedStyle(el).display), 'block');
+  await mobile.locator('.nav-item[data-view="orders"]').click();
+  await mobile.waitForSelector('.order-row');
+  assert.match(await mobile.locator('.order-main strong').innerText(), /校园科学活动/);
+  assert.equal(await mobile.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
+  await mobile.screenshot({ path: path.join(artifactDir, 'ui-orders-mobile.png'), fullPage: true });
+  await mobile.locator('.nav-item[data-view="create"]').click();
+  await mobile.locator('#photoInput').setInputFiles(imagePath);
+  await mobile.locator('#title').fill('直接生成演示稿');
+  await mobile.locator('#grade').selectOption('3');
+  await mobile.locator('#gender').selectOption('girl');
+  await mobile.locator('#content').fill('参观植物园\n观察叶片\n比较颜色\n记录形状\n整理笔记\n分享发现');
+  await mobile.locator('#consent').check();
+  assert.equal(await mobile.locator('#reviewOutline').isChecked(), false);
+  await mobile.locator('#submitDeck').click();
+  await mobile.waitForSelector('#view-preview.active', { timeout: 10000 });
+  assert.equal(await mobile.locator('.slide-card').count(), 5);
+  assert.equal(await mobile.locator('.preview-actions button').count(), 2);
+  assert.equal(await mobile.locator('#downloadFull').innerText(), '下载完整版（共8页）');
+  assert.doesNotMatch(await mobile.locator('#view-preview').innerText(), /收费|支付|付款|¥/);
+  await mobile.locator('#downloadFull').click();
+  assert.equal(await mobile.locator('#paymentDialog').evaluate(dialog => dialog.open), true);
+  assert.equal(await mobile.locator('#paymentDialog').evaluate(dialog => dialog.scrollWidth <= dialog.clientWidth), true);
+  await mobile.screenshot({ path: path.join(artifactDir, 'ui-download-dialog-mobile.png') });
+  await mobile.locator('#cancelPayment').click();
+  assert.doesNotMatch(await mobile.locator('#slidePreview').innerText(), /我先完成|我认真听|更清楚的认识/);
+  await mobile.screenshot({ path: path.join(artifactDir, 'ui-direct-mobile.png'), fullPage: true });
+  await mobile.locator('.nav-item[data-view="create"]').click();
+  await mobile.locator('#content').fill('观察叶片的形状。');
+  await mobile.locator('#submitDeck').click();
+  await mobile.waitForSelector('#view-preview.active', { timeout: 10000 });
+  assert.equal(await mobile.locator('.slide-card').count(), 3);
+  const mobileFreeDownload = mobile.waitForEvent('download');
+  await mobile.locator('#downloadFull').click();
+  await mobileFreeDownload;
+  assert.equal(await mobile.locator('#paymentDialog').evaluate(dialog => dialog.open), false);
+  await mobile.close();
+  assert.deepEqual(pageErrors, []);
+  console.log('UI PASS: desktop and mobile flows verified');
+} finally {
+  clearInterval(workerTimer);
+  await browser.close();
+  await app.close();
+  await rm(dataDir, { recursive: true, force: true });
+}

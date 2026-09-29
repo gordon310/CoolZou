@@ -1,0 +1,7 @@
+.page-title { margin-bottom: 18rpx; }
+.progress-card { margin: 24rpx 0; padding: 30rpx 26rpx; background: #fff; border: 1rpx solid #dbe6df; border-radius: 12rpx; }
+.progress-message { display: block; color: #1b5946; font-size: 28rpx; font-weight: 700; }
+.progress-row { display: flex; justify-content: space-between; align-items: center; gap: 20rpx; margin-top: 24rpx; color: #69736e; font-size: 24rpx; }
+.progress-percent { color: #26735b; font-size: 36rpx; font-weight: 800; }
+.progress-track { height: 10rpx; margin-top: 16rpx; overflow: hidden; background: #e7eee9; border-radius: 10rpx; }
+.progress-value { height: 100%; background: #26735b; border-radius: 10rpx; transition: width .35s ease; }

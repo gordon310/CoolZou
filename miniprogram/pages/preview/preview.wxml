@@ -1,0 +1,18 @@
+<view class="page">
+  <text class="eyebrow">{{view.generating ? '正在生成' : '作品预览'}}</text>
+  <view class="page-title">{{view.title}}</view>
+  <view wx:if="{{error}}" class="notice">{{error}}</view>
+  <button wx:if="{{deck && deck.status === 'failed'}}" class="secondary" bindtap="retry">重试生成</button>
+  <view wx:if="{{view.showProgress}}" class="progress-card">
+    <text class="progress-message">请稍后，精彩马上呈现</text>
+    <view class="progress-row"><text class="progress-percent">{{progress.percent}}%</text><text>{{progress.stage}}</text></view>
+    <view class="progress-track"><view class="progress-value" style="width: {{progress.percent}}%;"></view></view>
+  </view>
+  <view wx:if="{{deck && deck.status === 'ready'}}">
+    <view class="preview-card {{!deck.paid && index >= (config.freePages || 5) ? 'locked' : ''}}" wx:for="{{deck.slides}}" wx:key="index">
+      <view class="preview-copy"><text class="preview-title">{{item.title}}</text><text class="preview-body">{{item.body}}</text></view>
+      <image wx:if="{{item.photoUrl}}" class="preview-photo" src="{{item.photoUrl}}" mode="aspectFill"></image>
+    </view>
+    <view class="actions"><button class="secondary" loading="{{loading}}" disabled="{{loading}}" bindtap="downloadFree">免费下载</button><button class="primary" loading="{{loading}}" disabled="{{loading}}" bindtap="downloadFull">下载完整版（共{{deck.actualPages}}页）</button></view>
+  </view>
+</view>
